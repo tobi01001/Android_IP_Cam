@@ -37,10 +37,10 @@ IP_Cam is an Android application that transforms Android devices into fully-func
 ### Option 1: Build from Source
 
 #### Prerequisites
-- Android Studio Arctic Fox (2020.3.1) or later
+- Android Studio Ladybug (2024.2.1) or later
 - Android SDK with API 34
-- Gradle 8.2 or later
-- JDK 8 or later
+- Gradle 8.11 or later
+- JDK 21 or later
 
 #### Build Steps
 

@@ -6,9 +6,9 @@ Thank you for your interest in contributing to IP_Cam! This document provides gu
 
 ### Prerequisites
 
-1. **Android Studio**: Arctic Fox (2020.3.1) or later
+1. **Android Studio**: Ladybug (2024.2.1) or later
 2. **Android SDK**: API 24 (minimum) to API 34 (target)
-3. **Java Development Kit**: JDK 8 or later (JDK 17 recommended)
+3. **Java Development Kit**: JDK 21 or later
 4. **Git**: For version control
 
 ### Setting Up the Project
