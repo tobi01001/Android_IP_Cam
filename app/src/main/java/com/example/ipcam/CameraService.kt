@@ -99,6 +99,9 @@ class CameraService : LifecycleService() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
 
+    // Network monitoring
+    private var networkMonitor: NetworkMonitor? = null
+
     // Coroutine scope for service lifecycle
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var watchdogJob: Job? = null
@@ -191,6 +194,9 @@ class CameraService : LifecycleService() {
         // Start HTTP server
         startWebServer()
         
+        // Start network monitoring
+        startNetworkMonitoring()
+        
         // Start watchdog
         startWatchdog()
         
@@ -211,6 +217,9 @@ class CameraService : LifecycleService() {
         
         // Stop watchdog
         watchdogJob?.cancel()
+        
+        // Stop network monitoring
+        stopNetworkMonitoring()
         
         // Stop HTTP server
         webServer?.stop()
@@ -412,6 +421,41 @@ class CameraService : LifecycleService() {
             Log.d(TAG, "Web server started on port ${config.serverPort}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start web server", e)
+        }
+    }
+
+    /**
+     * Start network monitoring
+     */
+    private fun startNetworkMonitoring() {
+        try {
+            networkMonitor = NetworkMonitor(this) {
+                // Network reconnected - restart server
+                Log.d(TAG, "Network reconnected, restarting server")
+                serviceScope.launch {
+                    delay(2000) // Wait for network to stabilize
+                    webServer?.stop()
+                    startWebServer()
+                    updateNotification()
+                }
+            }
+            networkMonitor?.start()
+            Log.d(TAG, "Network monitoring started")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start network monitoring", e)
+        }
+    }
+
+    /**
+     * Stop network monitoring
+     */
+    private fun stopNetworkMonitoring() {
+        try {
+            networkMonitor?.stop()
+            networkMonitor = null
+            Log.d(TAG, "Network monitoring stopped")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to stop network monitoring", e)
         }
     }
 
