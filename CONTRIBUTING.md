@@ -8,7 +8,7 @@ Thank you for your interest in contributing to IP_Cam! This document provides gu
 
 1. **Android Studio**: Ladybug (2024.2.1) or later
 2. **Android SDK**: API 24 (minimum) to API 34 (target)
-3. **Java Development Kit**: JDK 21 or later
+3. **Java Development Kit**: JDK 17 or later (JDK 21 recommended)
 4. **Git**: For version control
 
 ### Setting Up the Project

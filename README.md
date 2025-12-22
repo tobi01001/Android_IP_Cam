@@ -48,7 +48,7 @@ IP_Cam is an Android application that transforms Android devices into fully-func
 - Android Studio Ladybug (2024.2.1) or later
 - Android SDK with API 34
 - Gradle 8.11 or later
-- JDK 21 or later
+- JDK 17 or later (JDK 21 recommended for future-proofing)
 
 #### Build Steps
 

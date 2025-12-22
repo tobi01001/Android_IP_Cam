@@ -9,8 +9,9 @@ Before you begin, ensure you have the following installed:
 1. **Android Studio Ladybug (2024.2.1) or later**
    - Download from: https://developer.android.com/studio
    
-2. **JDK 21 or later**
-   - Android Studio typically includes a bundled JDK
+2. **JDK 17 or later**
+   - Android Studio typically includes a bundled JDK 17
+   - JDK 21 recommended for future-proofing
    - Or download from: https://adoptium.net/
    
 3. **Git** (for cloning the repository)
@@ -70,11 +71,11 @@ If you see any prompts about missing SDK components:
 
 ### Step 4: Configure JDK (if needed)
 
-Android Studio should use JDK 21 automatically. To verify:
+Android Studio should use JDK 17 automatically. To verify:
 
 1. Go to **File → Settings** (or **Android Studio → Preferences** on Mac)
 2. Navigate to **Build, Execution, Deployment → Build Tools → Gradle**
-3. Under **"Gradle JDK"**, ensure it's set to **"jbr-21"** (JetBrains Runtime 21) or **"Java 21"**
+3. Under **"Gradle JDK"**, ensure it's set to **"jbr-17"** (JetBrains Runtime 17) or **"Java 17"** or higher
 4. Click **"OK"**
 
 ![Gradle JDK](docs/images/gradle-jdk.png)
@@ -152,6 +153,21 @@ Once you have the APK file:
 
 ## Troubleshooting
 
+### Problem: "Cannot locate tasks that match ':app:compileJava'"
+
+**Solution:**
+This error occurs when trying to run Java-specific tasks on an Android project. Use Android-specific build commands instead:
+```bash
+# CORRECT - Android build commands
+./gradlew assembleDebug      # Build debug APK
+./gradlew assembleRelease    # Build release APK  
+./gradlew build              # Build all variants
+
+# INCORRECT - Don't use these for Android
+./gradlew compileJava        # ❌ Not for Android projects
+./gradlew jar                # ❌ Not for Android projects
+```
+
 ### Problem: "Gradle sync failed"
 
 **Solution:**
@@ -169,9 +185,9 @@ Once you have the APK file:
 ### Problem: "JDK version incompatible"
 
 **Solution:**
-1. Ensure you're using JDK 21 or later
+1. Ensure you're using JDK 17 or later
 2. Go to **File → Settings → Build, Execution, Deployment → Build Tools → Gradle**
-3. Set **Gradle JDK** to JDK 21
+3. Set **Gradle JDK** to JDK 17 or higher
 4. Click **"OK"** and sync again
 
 ### Problem: Build is very slow
@@ -297,4 +313,4 @@ If you encounter issues not covered here:
 **Last Updated**: 2025-12-22  
 **Android Studio Version**: Ladybug 2024.2.1+  
 **Gradle Version**: 8.11.1  
-**JDK Version**: 21
+**JDK Version**: 17+ (21 recommended)

@@ -298,19 +298,36 @@ class IPCamWebServer(
         
         Log.d(TAG, "Starting MJPEG stream #$streamId, total connections: ${cameraService.getActiveConnections()}")
         
-        return newChunkedResponse(Response.Status.OK, MJPEG_MIME) { output ->
-            streamingExecutor.execute {
+        // Create a piped stream for MJPEG data
+        val pipedInputStream = java.io.PipedInputStream()
+        val pipedOutputStream = java.io.PipedOutputStream(pipedInputStream)
+        
+        // Start streaming in background thread
+        streamingExecutor.execute {
+            try {
+                streamMJPEG(pipedOutputStream, streamId)
+            } catch (e: Exception) {
+                Log.e(TAG, "Stream #$streamId error", e)
+            } finally {
                 try {
-                    streamMJPEG(output, streamId)
+                    pipedOutputStream.close()
                 } catch (e: Exception) {
-                    Log.e(TAG, "Stream #$streamId error", e)
-                } finally {
-                    activeStreams.remove(streamId)
-                    cameraService.decrementConnections()
-                    Log.d(TAG, "Stream #$streamId ended, remaining: ${cameraService.getActiveConnections()}")
+                    Log.e(TAG, "Error closing stream", e)
                 }
+                activeStreams.remove(streamId)
+                cameraService.decrementConnections()
+                Log.d(TAG, "Stream #$streamId ended, remaining: ${cameraService.getActiveConnections()}")
             }
         }
+        
+        val response = newFixedLengthResponse(Response.Status.OK, MJPEG_MIME, pipedInputStream, -1)
+        response.addHeader("Connection", "keep-alive")
+        response.addHeader("Cache-Control", "no-cache, no-store, must-revalidate")
+        response.addHeader("Pragma", "no-cache")
+        response.addHeader("Expires", "0")
+        response.addHeader("Access-Control-Allow-Origin", "*")
+        
+        return response
     }
 
     /**
@@ -504,26 +521,41 @@ class IPCamWebServer(
      * Serve Server-Sent Events for real-time status updates
      */
     private fun serveServerSentEvents(): Response {
-        return newChunkedResponse(Response.Status.OK, "text/event-stream") { output ->
-            serverScope.launch {
-                try {
-                    while (isActive) {
-                        val status = JSONObject().apply {
-                            put("connections", cameraService.getActiveConnections())
-                            put("camera", cameraService.getConfig().cameraType)
-                            put("flashlight", cameraService.getConfig().flashlightEnabled)
-                        }
-                        
-                        output.write("data: ${status}\n\n".toByteArray())
-                        output.flush()
-                        
-                        delay(2000) // Update every 2 seconds
+        // Create a piped stream for SSE data
+        val pipedInputStream = java.io.PipedInputStream()
+        val pipedOutputStream = java.io.PipedOutputStream(pipedInputStream)
+        
+        serverScope.launch {
+            try {
+                while (isActive) {
+                    val status = JSONObject().apply {
+                        put("connections", cameraService.getActiveConnections())
+                        put("camera", cameraService.getConfig().cameraType)
+                        put("flashlight", cameraService.getConfig().flashlightEnabled)
                     }
+                    
+                    pipedOutputStream.write("data: ${status}\n\n".toByteArray())
+                    pipedOutputStream.flush()
+                    
+                    delay(2000) // Update every 2 seconds
+                }
+            } catch (e: Exception) {
+                Log.d(TAG, "SSE connection closed")
+            } finally {
+                try {
+                    pipedOutputStream.close()
                 } catch (e: Exception) {
-                    Log.d(TAG, "SSE connection closed")
+                    Log.e(TAG, "Error closing SSE stream", e)
                 }
             }
         }
+        
+        val response = newFixedLengthResponse(Response.Status.OK, "text/event-stream", pipedInputStream, -1)
+        response.addHeader("Connection", "keep-alive")
+        response.addHeader("Cache-Control", "no-cache")
+        response.addHeader("Access-Control-Allow-Origin", "*")
+        
+        return response
     }
 
     override fun stop() {
