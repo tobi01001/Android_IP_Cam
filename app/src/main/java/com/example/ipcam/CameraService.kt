@@ -274,6 +274,7 @@ class CameraService : LifecycleService() {
     private fun initializeCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         
+        // Must run on main thread for CameraX bindToLifecycle()
         cameraProviderFuture.addListener({
             try {
                 cameraProvider = cameraProviderFuture.get()
@@ -281,7 +282,7 @@ class CameraService : LifecycleService() {
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize camera", e)
             }
-        }, cameraExecutor)
+        }, androidx.core.content.ContextCompat.getMainExecutor(this))
     }
 
     /**
