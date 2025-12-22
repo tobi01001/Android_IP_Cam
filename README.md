@@ -2,6 +2,14 @@
 
 IP_Cam is an Android application that transforms Android devices into fully-functional IP cameras with HTTP streaming capabilities. The application is designed for 24/7 surveillance operations, repurposing older Android devices into reliable, network-accessible camera systems compatible with professional surveillance software.
 
+## Quick Links
+
+📖 **[BUILD_GUIDE.md](BUILD_GUIDE.md)** - Step-by-step guide for building with Android Studio  
+🏗️ **[ARCHITECTURE.md](ARCHITECTURE.md)** - Detailed code structure and architecture explanation  
+⚡ **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes  
+📡 **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference  
+🤝 **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development guidelines
+
 ## Features
 
 - **Live Camera Preview**: View what the camera sees directly in the app
@@ -43,6 +51,8 @@ IP_Cam is an Android application that transforms Android devices into fully-func
 - JDK 21 or later
 
 #### Build Steps
+
+**For detailed instructions with screenshots, see [BUILD_GUIDE.md](BUILD_GUIDE.md)**
 
 1. **Clone the repository**:
    ```bash
@@ -289,8 +299,22 @@ Android_IP_Cam/
 
 ## Documentation
 
-- **[Requirements Specification](REQUIREMENTS_SPECIFICATION.md)** - Complete technical requirements
-- **[Requirements Summary](REQUIREMENTS_SUMMARY.md)** - Quick reference guide
+### For Developers
+- **[BUILD_GUIDE.md](BUILD_GUIDE.md)** - Step-by-step Android Studio build instructions (with troubleshooting)
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete code structure and architecture explanation
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development workflow and guidelines
+
+### For Users
+- **[QUICK_START.md](QUICK_START.md)** - Get started in 5 minutes
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference with examples
+
+### Technical Specifications
+- **[REQUIREMENTS_SPECIFICATION.md](REQUIREMENTS_SPECIFICATION.md)** - Complete technical requirements (125+ requirements)
+- **[REQUIREMENTS_SUMMARY.md](REQUIREMENTS_SUMMARY.md)** - Quick reference guide
+- **[IMPLEMENTATION_VALIDATION.md](IMPLEMENTATION_VALIDATION.md)** - Compliance verification report
+
+### Additional Resources
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
 
 ## Target Device
 
