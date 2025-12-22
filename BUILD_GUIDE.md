@@ -80,57 +80,127 @@ Android Studio should use JDK 17 automatically. To verify:
 
 ![Gradle JDK](docs/images/gradle-jdk.png)
 
-### Step 5: Build the Project
+### Step 5: Configure Run/Debug Configuration
 
-There are several ways to build:
+Android Studio needs a run configuration to launch and debug the app. This project includes a pre-configured setup.
 
-#### Option A: Build APK (Recommended for Testing)
+#### Automatic Configuration (Recommended)
 
-1. Go to **Build → Build Bundle(s) / APK(s) → Build APK(s)**
-2. Wait for the build to complete (2-5 minutes on first build)
-3. When complete, you'll see a notification: "APK(s) generated successfully"
-4. Click **"locate"** to find the APK file
+1. **Open the project** in Android Studio (if not already open)
+2. **Sync Gradle** if prompted (or go to **File → Sync Project with Gradle Files**)
+3. Look at the **top toolbar** - you should see a dropdown that says **"app"** next to a green **▶ Run** button
+4. If you see the "app" configuration, you're ready to go! Skip to **Step 6** below.
 
-The APK will be located at:
+#### Manual Configuration (If Needed)
+
+If the run configuration doesn't appear automatically:
+
+1. Go to **Run → Edit Configurations...**
+2. Click the **+** button (top left)
+3. Select **Android App**
+4. Configure as follows:
+   - **Name**: `app`
+   - **Module**: Select `IP_Cam.app.main` from dropdown
+   - **Deploy**: Check "Default Activity" or select "Launch: default Activity"
+   - **Installation Options**: Keep defaults
+5. Click **Apply** then **OK**
+
+   ![Run Configuration Setup](docs/images/run-config-setup.png)
+
+#### Verify Configuration
+
+The run configuration toolbar should show:
 ```
-app/build/outputs/apk/debug/app-debug.apk
+[app] [Connected Device/Emulator] ▶ Run 🐛 Debug
 ```
 
-#### Option B: Build from Terminal
+### Step 6: Run on Device/Emulator
 
-Open the **Terminal** tab at the bottom of Android Studio and run:
+Now you can launch and debug the app directly from Android Studio!
 
-```bash
-# For debug build
-./gradlew assembleDebug
+#### Option A: Using Android Studio Run Button (Recommended for Development)
 
-# For release build (unsigned)
-./gradlew assembleRelease
-```
+1. **Prepare Device**:
+   
+   **For Physical Device**:
+   - Enable **Developer Options** on your Android device:
+     - Go to **Settings → About Phone**
+     - Tap **Build Number** 7 times
+     - Go back to **Settings → Developer Options**
+     - Enable **USB Debugging**
+   - Connect device via USB
+   - Accept the USB debugging prompt on your device
+   
+   **For Emulator**:
+   - Click **Device Manager** icon (phone icon in right toolbar)
+   - Click **Create Device** if no emulator exists
+   - Select a device (e.g., "Pixel 6")
+   - Select a system image (e.g., "Tiramisu" / API 33)
+   - Click **Finish**
+   - Click the **▶ Play** button next to your emulator to start it
 
-The APK will be generated at:
-- Debug: `app/build/outputs/apk/debug/app-debug.apk`
-- Release: `app/build/outputs/apk/release/app-release-unsigned.apk`
+2. **Select Target Device**:
+   - At the top of Android Studio, click the device dropdown (next to "app")
+   - Select your connected device or running emulator
+   - You should see device name (e.g., "Pixel 6 API 33" or "Samsung Galaxy S10+")
 
-#### Option C: Run on Device/Emulator
+3. **Run the App**:
+   - Click the green **▶ Run** button (or press **Shift + F10**)
+   - OR click the **🐛 Debug** button to run with debugger attached
+   - Android Studio will:
+     - Build the APK
+     - Install it on the device
+     - Launch the app automatically
+   - The app should open on your device showing the IP_Cam interface
 
-1. **Connect Android Device** (or start an emulator):
-   - Enable **Developer Options** and **USB Debugging** on your device
-   - Connect via USB
-   - OR click the **Device Manager** icon and start an emulator
+4. **View Logs** (Logcat):
+   - The **Logcat** panel at the bottom shows app logs in real-time
+   - Filter by "IP_Cam" or "CameraService" to see app-specific logs
+   - Useful for debugging and monitoring streaming activity
 
-2. **Select Device**:
-   - At the top of Android Studio, you'll see a device dropdown
-   - Select your connected device or emulator
+#### Option B: Build APK and Install Manually
 
-3. **Click Run**:
-   - Click the green **▶ Run** button
-   - OR press **Shift + F10** (Windows/Linux) or **Ctrl + R** (Mac)
-   - The app will build, install, and launch automatically
+If you prefer to build and install separately:
 
-   ![Run Configuration](docs/images/run-config.png)
+1. **Build APK**:
+   ```bash
+   ./gradlew assembleDebug
+   ```
+   Output: `app/build/outputs/apk/debug/app-debug.apk`
 
-### Step 6: Install APK on Physical Device
+2. **Install via ADB**:
+   ```bash
+   adb install app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+3. **Launch manually** on the device from app drawer
+
+### Step 7: Debugging in Android Studio
+
+Once the app is running with the debugger attached:
+
+1. **Set Breakpoints**:
+   - Click in the left margin of any code line to set a breakpoint
+   - Red dot appears indicating breakpoint is set
+   - Good locations: `CameraService.kt` line 200+ (camera initialization)
+
+2. **Debug Controls**:
+   - **Step Over** (F8): Execute current line
+   - **Step Into** (F7): Enter method calls
+   - **Resume** (F9): Continue execution
+   - **Stop** (Ctrl+F2): Stop debugging session
+
+3. **Inspect Variables**:
+   - When execution pauses at breakpoint, view **Variables** panel
+   - Hover over variables in code to see values
+   - Evaluate expressions in **Watches** panel
+
+4. **View Logs**:
+   - Logcat shows real-time application logs
+   - Filter by log level (Verbose, Debug, Info, Warn, Error)
+   - Search for specific tags like "CameraService" or "IPCamWebServer"
+
+### Step 8: Install APK on Physical Device (Alternative Method)
 
 Once you have the APK file:
 
@@ -152,6 +222,27 @@ Once you have the APK file:
 5. Tap **"Install"**
 
 ## Troubleshooting
+
+### Problem: "No run configuration available" or "app configuration missing"
+
+**Solution:**
+The project includes a pre-configured run configuration in `.idea/runConfigurations/app.xml`. If it doesn't appear:
+
+1. **Close and reopen the project**:
+   - **File → Close Project**
+   - Reopen from recent projects
+   
+2. **Manual configuration**:
+   - **Run → Edit Configurations...**
+   - Click **+** → **Android App**
+   - Set **Name**: `app`
+   - Set **Module**: `IP_Cam.app.main`
+   - Set **Launch**: Default Activity
+   - Click **Apply** → **OK**
+
+3. **Verify the configuration file**:
+   - Ensure `.idea/runConfigurations/app.xml` exists
+   - If missing, sync Gradle: **File → Sync Project with Gradle Files**
 
 ### Problem: "Cannot locate tasks that match ':app:compileJava'"
 
@@ -189,6 +280,42 @@ This error occurs when trying to run Java-specific tasks on an Android project. 
 2. Go to **File → Settings → Build, Execution, Deployment → Build Tools → Gradle**
 3. Set **Gradle JDK** to JDK 17 or higher
 4. Click **"OK"** and sync again
+
+### Problem: Device not showing in dropdown
+
+**Solution:**
+1. **For Physical Device**:
+   - Verify USB debugging is enabled
+   - Try a different USB cable or port
+   - On device, revoke and re-authorize USB debugging:
+     - **Settings → Developer Options → Revoke USB debugging authorizations**
+     - Reconnect and accept prompt
+   - Check ADB connection: `adb devices` (should list your device)
+
+2. **For Emulator**:
+   - Ensure emulator is fully started (not just starting up)
+   - Wait 30-60 seconds for emulator to boot completely
+   - Restart emulator from Device Manager
+   - If still not appearing, invalidate caches: **File → Invalidate Caches / Restart**
+
+### Problem: "Installation failed" or "INSTALL_FAILED_INSUFFICIENT_STORAGE"
+
+**Solution:**
+1. Free up space on your device/emulator
+2. Uninstall old version: `adb uninstall com.example.ipcam`
+3. Try installing again
+
+### Problem: App crashes immediately on launch
+
+**Solution:**
+1. Check Logcat for error messages (filter by "AndroidRuntime" or "FATAL")
+2. Verify camera permissions:
+   - Go to device **Settings → Apps → IP_Cam → Permissions**
+   - Ensure **Camera** permission is granted
+3. Common issues:
+   - Camera already in use by another app
+   - Device doesn't have a camera (use physical device or emulator with camera support)
+   - Missing permissions in manifest (should be already configured)
 
 ### Problem: Build is very slow
 

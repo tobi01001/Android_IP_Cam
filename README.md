@@ -6,6 +6,7 @@ IP_Cam is an Android application that transforms Android devices into fully-func
 
 📖 **[BUILD_GUIDE.md](BUILD_GUIDE.md)** - Step-by-step guide for building with Android Studio  
 🏗️ **[ARCHITECTURE.md](ARCHITECTURE.md)** - Detailed code structure and architecture explanation  
+🚀 **[ANDROID_STUDIO_SETUP.md](ANDROID_STUDIO_SETUP.md)** - Quick reference for Android Studio run/debug setup  
 ⚡ **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes  
 📡 **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference  
 🤝 **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development guidelines

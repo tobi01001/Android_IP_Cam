@@ -17,9 +17,12 @@ captures/
 *.apk
 output-metadata.json
 
-# IntelliJ
+# IntelliJ - Exclude most of .idea but keep runConfigurations
+.idea/*
+!.idea/runConfigurations/
+.idea/runConfigurations/*
+!.idea/runConfigurations/app.xml
 *.iml
-.idea/
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
