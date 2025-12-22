@@ -24,6 +24,7 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleOwner
@@ -85,6 +86,8 @@ class CameraService : LifecycleService() {
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
     private var imageAnalysis: ImageAnalysis? = null
+    private var preview: Preview? = null
+    private var previewSurfaceProvider: Preview.SurfaceProvider? = null
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     // Frame management
@@ -247,9 +250,21 @@ class CameraService : LifecycleService() {
         StreamingConfig.save(this, config)
         
         if (isRunning) {
-            releaseCamera()
-            initializeCamera()
+            // Run camera operations on main thread
+            runOnMainThread {
+                releaseCamera()
+                initializeCamera()
+            }
         }
+    }
+    
+    /**
+     * Set the Preview SurfaceProvider from MainActivity
+     * Must be called from main thread
+     */
+    fun setPreviewSurfaceProvider(surfaceProvider: Preview.SurfaceProvider) {
+        previewSurfaceProvider = surfaceProvider
+        preview?.setSurfaceProvider(surfaceProvider)
     }
 
     /**
@@ -286,7 +301,7 @@ class CameraService : LifecycleService() {
     }
 
     /**
-     * Bind camera use cases (ImageAnalysis for frame capture)
+     * Bind camera use cases (Preview + ImageAnalysis)
      */
     private fun bindCameraUseCases() {
         val cameraProvider = cameraProvider ?: return
@@ -301,6 +316,16 @@ class CameraService : LifecycleService() {
             CameraSelector.DEFAULT_BACK_CAMERA
         }
         
+        // Configure preview
+        preview = Preview.Builder()
+            .build()
+            .also { 
+                // Set surface provider if available (from MainActivity)
+                previewSurfaceProvider?.let { provider ->
+                    it.setSurfaceProvider(provider)
+                }
+            }
+        
         // Configure image analysis
         imageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -313,10 +338,11 @@ class CameraService : LifecycleService() {
             }
         
         try {
-            // Bind use cases to lifecycle
+            // Bind use cases to lifecycle (include preview for MainActivity)
             camera = cameraProvider.bindToLifecycle(
                 this as LifecycleOwner,
                 cameraSelector,
+                preview,
                 imageAnalysis
             )
             
@@ -400,16 +426,26 @@ class CameraService : LifecycleService() {
 
     /**
      * Release camera resources
+     * Must be called from main thread
      */
     private fun releaseCamera() {
         try {
             cameraProvider?.unbindAll()
             camera = null
             imageAnalysis = null
+            preview = null
             Log.d(TAG, "Camera released")
         } catch (e: Exception) {
             Log.e(TAG, "Error releasing camera", e)
         }
+    }
+    
+    /**
+     * Helper to run code on main thread
+     */
+    private fun runOnMainThread(block: () -> Unit) {
+        val mainExecutor = androidx.core.content.ContextCompat.getMainExecutor(this)
+        mainExecutor.execute(block)
     }
 
     /**

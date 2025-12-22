@@ -53,6 +53,12 @@ class MainActivity : AppCompatActivity() {
     private val uiScope = CoroutineScope(Dispatchers.Main + Job())
     private var statusUpdateJob: Job? = null
     
+    // Cache last UI state to avoid unnecessary updates
+    private var lastIsRunning: Boolean? = null
+    private var lastServerUrl: String? = null
+    private var lastConnections: Int? = null
+    private var lastCameraType: String? = null
+    
     // Frame listener for preview
     private val frameListener = object : CameraService.FrameListener {
         override fun onFrameAvailable(frame: ByteArray) {
@@ -68,6 +74,10 @@ class MainActivity : AppCompatActivity() {
             cameraService = binder.getService()
             serviceBound = true
             Log.d(TAG, "Service connected")
+            
+            // Set preview surface provider
+            cameraService?.setPreviewSurfaceProvider(binding.previewView.surfaceProvider)
+            
             updateUI()
             startStatusUpdates()
         }
@@ -283,53 +293,68 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Update UI with current service status
+     * Only updates changed values to prevent disrupting user interaction (e.g., text selection)
      */
     private fun updateUI() {
         val service = cameraService ?: return
         
-        // Update service status
+        // Get current state
         val isRunning = service.isServiceRunning()
-        binding.serverStatusText.text = if (isRunning) {
-            getString(R.string.service_running)
-        } else {
-            getString(R.string.service_stopped)
-        }
-        
-        binding.serverStatusText.setTextColor(
-            if (isRunning) {
-                ContextCompat.getColor(this, R.color.green)
-            } else {
-                ContextCompat.getColor(this, R.color.red)
-            }
-        )
-        
-        // Update start/stop button
-        binding.startStopButton.text = if (isRunning) {
-            getString(R.string.stop_service)
-        } else {
-            getString(R.string.start_service)
-        }
-        
-        // Update server URL
-        binding.serverUrlText.text = if (isRunning) {
-            service.getServerUrl()
-        } else {
-            "-"
-        }
-        
-        // Update connections count
-        binding.connectionsText.text = service.getActiveConnections().toString()
-        
-        // Update camera type
+        val serverUrl = if (isRunning) service.getServerUrl() else "-"
+        val connections = service.getActiveConnections()
         val config = service.getConfig()
-        binding.cameraText.text = if (config.cameraType == "back") {
-            getString(R.string.back_camera)
-        } else {
-            getString(R.string.front_camera)
+        val cameraType = config.cameraType
+        
+        // Update service status only if changed
+        if (lastIsRunning != isRunning) {
+            binding.serverStatusText.text = if (isRunning) {
+                getString(R.string.service_running)
+            } else {
+                getString(R.string.service_stopped)
+            }
+            
+            binding.serverStatusText.setTextColor(
+                if (isRunning) {
+                    ContextCompat.getColor(this, R.color.green)
+                } else {
+                    ContextCompat.getColor(this, R.color.red)
+                }
+            )
+            
+            // Update start/stop button
+            binding.startStopButton.text = if (isRunning) {
+                getString(R.string.stop_service)
+            } else {
+                getString(R.string.start_service)
+            }
+            
+            lastIsRunning = isRunning
+        }
+        
+        // Update server URL only if changed (preserves text selection)
+        if (lastServerUrl != serverUrl) {
+            binding.serverUrlText.text = serverUrl
+            lastServerUrl = serverUrl
+        }
+        
+        // Update connections count only if changed
+        if (lastConnections != connections) {
+            binding.connectionsText.text = connections.toString()
+            lastConnections = connections
+        }
+        
+        // Update camera type only if changed
+        if (lastCameraType != cameraType) {
+            binding.cameraText.text = if (cameraType == "back") {
+                getString(R.string.back_camera)
+            } else {
+                getString(R.string.front_camera)
+            }
+            lastCameraType = cameraType
         }
         
         // Enable/disable camera controls based on service status
         binding.switchCameraButton.isEnabled = isRunning
-        binding.toggleFlashlightButton.isEnabled = isRunning && config.cameraType == "back"
+        binding.toggleFlashlightButton.isEnabled = isRunning && cameraType == "back"
     }
 }
