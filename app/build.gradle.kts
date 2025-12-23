@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ipcam"
+    namespace = "com.example.androidipcam"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.ipcam"
+        applicationId = "com.example.androidipcam"
         minSdk = 24  // Android 7.0+ for CameraX compatibility
         targetSdk = 34  // Android 14
         versionCode = 1

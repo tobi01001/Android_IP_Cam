@@ -1,6 +1,6 @@
-# IP_Cam Application Architecture
+# Android_IP_Cam Application Architecture
 
-This document explains the code structure and architecture of the IP_Cam Android application.
+This document explains the code structure and architecture of the Android_IP_Cam Android application.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ This document explains the code structure and architecture of the IP_Cam Android
 
 ## High-Level Overview
 
-IP_Cam is structured around the **Single Source of Truth** principle, where `CameraService` is the sole manager of the camera resource and distributes frames to all consumers.
+Android_IP_Cam is structured around the **Single Source of Truth** principle, where `CameraService` is the sole manager of the camera resource and distributes frames to all consumers.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -552,7 +552,7 @@ private fun startWatchdog() {
 
 **Location**: Android SharedPreferences  
 **File**: `StreamingConfig.kt`  
-**Key**: `"ipcam_settings"`
+**Key**: `"android_ipcam_settings"`
 
 ### When Settings are Saved
 
@@ -729,7 +729,7 @@ Configure ZoneMinder/Shinobi/Blue Iris with:
 
 ## Summary
 
-The IP_Cam application follows a clean, modular architecture:
+The Android_IP_Cam application follows a clean, modular architecture:
 
 - **CameraService** = Core logic (camera + streaming)
 - **IPCamWebServer** = HTTP interface (web + API)

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the IP_Cam project will be documented in this file.
+All notable changes to the Android_IP_Cam project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial implementation of IP_Cam application
+- Initial implementation of Android_IP_Cam application
 - Complete Android project structure with Gradle build system
 - CameraService as single source of truth for camera management
 - MJPEG streaming via HTTP server (NanoHTTPD)
@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - TBD
 
 ### Summary
-First official release of IP_Cam with complete MJPEG streaming functionality, RESTful API, web interface, and compatibility with major NVR/VMS systems.
+First official release of Android_IP_Cam with complete MJPEG streaming functionality, RESTful API, web interface, and compatibility with major NVR/VMS systems.
 
 ---
 

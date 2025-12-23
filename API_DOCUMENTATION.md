@@ -1,6 +1,6 @@
-# IP_Cam API Documentation
+# Android_IP_Cam API Documentation
 
-This document provides detailed information about the RESTful API endpoints available in the IP_Cam application.
+This document provides detailed information about the RESTful API endpoints available in the Android_IP_Cam application.
 
 ## Base URL
 

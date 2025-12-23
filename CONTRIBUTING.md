@@ -1,6 +1,6 @@
-# Contributing to IP_Cam
+# Contributing to Android_IP_Cam
 
-Thank you for your interest in contributing to IP_Cam! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to Android_IP_Cam! This document provides guidelines and instructions for contributing to the project.
 
 ## Development Environment Setup
 
@@ -352,7 +352,7 @@ All contributions go through code review:
 
 ## License
 
-By contributing to IP_Cam, you agree that your contributions will be licensed under the MIT License.
+By contributing to Android_IP_Cam, you agree that your contributions will be licensed under the MIT License.
 
 ## Recognition
 
@@ -361,4 +361,4 @@ Contributors will be acknowledged in:
 - Release notes
 - Project documentation
 
-Thank you for contributing to IP_Cam! 🎥📹
+Thank you for contributing to Android_IP_Cam! 🎥📹

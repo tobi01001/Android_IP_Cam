@@ -1,4 +1,4 @@
-# IP_Cam Quick Start Guide
+# Android_IP_Cam Quick Start Guide
 
 Get your Android IP Camera up and running in 5 minutes!
 
@@ -58,7 +58,7 @@ http://YOUR_DEVICE_IP:8080/snapshot
 - Use front camera if wall-mounted
 
 ### 4. Multi-Camera Setup
-- Install IP_Cam on multiple devices
+- Install Android_IP_Cam on multiple devices
 - Add all to NVR software (ZoneMinder, etc.)
 - Monitor all cameras from single interface
 

@@ -1,4 +1,4 @@
-# IP_Cam Application - Complete Requirements Specification
+# Android_IP_Cam Application - Complete Requirements Specification
 
 **Version:** 1.0  
 **Date:** 2025-12-21  
@@ -31,7 +31,7 @@
 
 ### 1.1 Purpose
 
-IP_Cam is an Android application that transforms Android devices into fully-functional IP cameras with HTTP streaming capabilities. The application is designed for 24/7 surveillance operations, repurposing older Android devices into reliable, network-accessible camera systems compatible with professional surveillance software.
+Android_IP_Cam is an Android application that transforms Android devices into fully-functional IP cameras with HTTP streaming capabilities. The application is designed for 24/7 surveillance operations, repurposing older Android devices into reliable, network-accessible camera systems compatible with professional surveillance software.
 
 ### 1.2 Target Users
 
@@ -53,7 +53,7 @@ IP_Cam is an Android application that transforms Android devices into fully-func
 
 ### 2.1 Application Description
 
-IP_Cam provides camera streaming functionality through:
+Android_IP_Cam provides camera streaming functionality through:
 - **Live camera preview** in the Android app
 - **HTTP web server** for browser and API access
 - **MJPEG video streaming** for real-time viewing
@@ -73,7 +73,7 @@ IP_Cam provides camera streaming functionality through:
 - Remote camera switching
 
 **UC-003: Multi-Camera Surveillance Integration**
-- Deploy multiple IP_Cam devices
+- Deploy multiple Android_IP_Cam devices
 - Integrate with NVR software (ZoneMinder, Blue Iris)
 - Centralized recording and monitoring
 
@@ -86,7 +86,7 @@ IP_Cam provides camera streaming functionality through:
 
 ## 3. Core Design Principles
 
-The IP_Cam application is built around **five critical design principles** that guide all implementation decisions:
+The Android_IP_Cam application is built around **five critical design principles** that guide all implementation decisions:
 
 ### 3.1 Bandwidth Usage & Performance
 
@@ -240,7 +240,7 @@ The IP_Cam application is built around **five critical design principles** that 
 
 ## Conclusion
 
-This requirements specification provides a complete blueprint for implementing the IP_Cam application from scratch. It captures all functional and non-functional requirements, technical architecture details, and operational considerations necessary for building a professional-grade IP camera solution on Android.
+This requirements specification provides a complete blueprint for implementing the Android_IP_Cam application from scratch. It captures all functional and non-functional requirements, technical architecture details, and operational considerations necessary for building a professional-grade IP camera solution on Android.
 
 The document is structured to guide developers through:
 - **Core Design Principles**: The five foundational principles that drive all implementation decisions

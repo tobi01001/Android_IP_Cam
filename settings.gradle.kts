@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "IP_Cam"
+rootProject.name = "Android_IP_Cam"
 include(":app")

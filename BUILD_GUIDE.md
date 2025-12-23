@@ -1,6 +1,6 @@
-# Building IP_Cam with Android Studio
+# Building Android_IP_Cam with Android Studio
 
-This guide provides step-by-step instructions for building the IP_Cam Android application using Android Studio.
+This guide provides step-by-step instructions for building the Android_IP_Cam Android application using Android Studio.
 
 ## Prerequisites
 
@@ -100,7 +100,7 @@ If the run configuration doesn't appear automatically:
 3. Select **Android App**
 4. Configure as follows:
    - **Name**: `app`
-   - **Module**: Select `IP_Cam.app.main` from dropdown
+   - **Module**: Select `Android_IP_Cam.app.main` from dropdown
    - **Deploy**: Check "Default Activity" or select "Launch: default Activity"
    - **Installation Options**: Keep defaults
 5. Click **Apply** then **OK**
@@ -151,11 +151,11 @@ Now you can launch and debug the app directly from Android Studio!
      - Build the APK
      - Install it on the device
      - Launch the app automatically
-   - The app should open on your device showing the IP_Cam interface
+   - The app should open on your device showing the Android_IP_Cam interface
 
 4. **View Logs** (Logcat):
    - The **Logcat** panel at the bottom shows app logs in real-time
-   - Filter by "IP_Cam" or "CameraService" to see app-specific logs
+   - Filter by "Android_IP_Cam" or "CameraService" to see app-specific logs
    - Useful for debugging and monitoring streaming activity
 
 #### Option B: Build APK and Install Manually
@@ -236,7 +236,7 @@ The project includes a pre-configured run configuration in `.idea/runConfigurati
    - **Run → Edit Configurations...**
    - Click **+** → **Android App**
    - Set **Name**: `app`
-   - Set **Module**: `IP_Cam.app.main`
+   - Set **Module**: `Android_IP_Cam.app.main`
    - Set **Launch**: Default Activity
    - Click **Apply** → **OK**
 
@@ -302,7 +302,7 @@ This error occurs when trying to run Java-specific tasks on an Android project. 
 
 **Solution:**
 1. Free up space on your device/emulator
-2. Uninstall old version: `adb uninstall com.example.ipcam`
+2. Uninstall old version: `adb uninstall com.example.androidipcam`
 3. Try installing again
 
 ### Problem: App crashes immediately on launch
@@ -310,7 +310,7 @@ This error occurs when trying to run Java-specific tasks on an Android project. 
 **Solution:**
 1. Check Logcat for error messages (filter by "AndroidRuntime" or "FATAL")
 2. Verify camera permissions:
-   - Go to device **Settings → Apps → IP_Cam → Permissions**
+   - Go to device **Settings → Apps → Android_IP_Cam → Permissions**
    - Ensure **Camera** permission is granted
 3. Common issues:
    - Camera already in use by another app

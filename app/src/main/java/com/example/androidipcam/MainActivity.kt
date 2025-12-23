@@ -1,4 +1,4 @@
-package com.example.ipcam
+package com.example.androidipcam
 
 import android.Manifest
 import android.content.ComponentName
@@ -18,7 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.example.ipcam.databinding.ActivityMainBinding
+import com.example.androidipcam.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -1,4 +1,4 @@
-package com.example.ipcam
+package com.example.androidipcam
 
 import android.app.Notification
 import android.app.NotificationChannel

@@ -1,4 +1,4 @@
-package com.example.ipcam
+package com.example.androidipcam
 
 import android.util.Log
 import fi.iki.elonen.NanoHTTPD

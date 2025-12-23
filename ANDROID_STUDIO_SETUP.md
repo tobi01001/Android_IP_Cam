@@ -1,6 +1,6 @@
 # Android Studio Setup - Quick Reference
 
-This guide helps you quickly set up Android Studio to launch and debug the IP_Cam application.
+This guide helps you quickly set up Android Studio to launch and debug the Android_IP_Cam application.
 
 ## Prerequisites
 
@@ -61,7 +61,7 @@ If "app" configuration is missing:
 3. Select **Android App**
 4. Configure:
    - **Name**: `app`
-   - **Module**: `IP_Cam.app.main`
+   - **Module**: `Android_IP_Cam.app.main`
    - **Launch**: Default Activity
 5. **Apply** → **OK**
 
@@ -81,7 +81,7 @@ If "app" configuration is missing:
 - **Ctrl+F2**: Stop
 
 ### Logcat Filtering
-- Type in filter: `CameraService` or `IPCam`
+- Type in filter: `CameraService` or `AndroidIPCam`
 - Log levels: Verbose, Debug, Info, Warn, Error, Assert
 - Search: `Ctrl+F` in Logcat
 
@@ -105,7 +105,7 @@ If "app" configuration is missing:
 ### ❌ App crashes on launch
 **Fix**:
 1. Check Logcat for errors
-2. Grant camera permission: **Settings → Apps → IP_Cam → Permissions**
+2. Grant camera permission: **Settings → Apps → Android_IP_Cam → Permissions**
 3. Close other camera apps
 
 ### ❌ Cannot find SDK
@@ -143,7 +143,7 @@ Switch between build types:
 ## Project Structure
 
 ```
-IP_Cam/
+Android_IP_Cam/
 ├── app/
 │   ├── src/main/
 │   │   ├── java/com/example/ipcam/

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">IP_Cam</string>
+    <string name="app_name">Android IP Cam</string>
     
     <!-- Service Notification -->
     <string name="service_notification_title">IP Camera Active</string>

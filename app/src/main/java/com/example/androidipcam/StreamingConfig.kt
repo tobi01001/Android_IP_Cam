@@ -1,4 +1,4 @@
-package com.example.ipcam
+package com.example.androidipcam
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -20,7 +20,7 @@ data class StreamingConfig(
     val maxConnections: Int = 32
 ) {
     companion object {
-        private const val PREFS_NAME = "ipcam_settings"
+        private const val PREFS_NAME = "android_ipcam_settings"
         private const val KEY_CAMERA_TYPE = "camera_type"
         private const val KEY_ROTATION = "rotation"
         private const val KEY_RESOLUTION = "resolution"
