@@ -19,12 +19,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.androidipcam.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 /**
  * MainActivity - Main UI for IP_Cam Application
@@ -32,10 +26,18 @@ import kotlinx.coroutines.launch
  * Responsibilities:
  * - Request camera and notification permissions
  * - Bind to CameraService
- * - Display camera preview via callback
+ * - Display camera preview via CameraX Preview use case (managed by CameraService)
+ * - Receive immediate state change notifications via StateChangeListener callback
  * - Provide controls for start/stop, camera switch, flashlight
  * - Display real-time status (server URL, connections, camera)
  * - Request battery optimization exemption
+ * 
+ * Note on Single Source of Truth Architecture:
+ * - MainActivity does NOT access the camera directly
+ * - CameraService is the ONLY component that manages camera lifecycle
+ * - MainActivity receives updates via StateChangeListener callbacks (REQ-SST-004)
+ * - Preview is rendered via CameraX Preview use case for optimal performance
+ * - All camera operations (start, stop, switch) go through CameraService
  */
 class MainActivity : AppCompatActivity() {
 
@@ -49,21 +51,36 @@ class MainActivity : AppCompatActivity() {
     private var cameraService: CameraService? = null
     private var serviceBound = false
     
-    // UI update coroutine
-    private val uiScope = CoroutineScope(Dispatchers.Main + Job())
-    private var statusUpdateJob: Job? = null
-    
     // Cache last UI state to avoid unnecessary updates
     private var lastIsRunning: Boolean? = null
     private var lastServerUrl: String? = null
     private var lastConnections: Int? = null
     private var lastCameraType: String? = null
     
-    // Frame listener for preview
-    private val frameListener = object : CameraService.FrameListener {
-        override fun onFrameAvailable(frame: ByteArray) {
-            // Note: PreviewView is handled by CameraX directly
-            // This callback can be used for custom preview if needed
+    // State change listener for immediate updates
+    private val stateChangeListener = object : CameraService.StateChangeListener {
+        override fun onServiceStateChanged(isRunning: Boolean) {
+            runOnUiThread {
+                updateServiceState(isRunning)
+            }
+        }
+        
+        override fun onCameraChanged(cameraType: String) {
+            runOnUiThread {
+                updateCameraType(cameraType)
+            }
+        }
+        
+        override fun onConfigChanged(config: StreamingConfig) {
+            runOnUiThread {
+                updateConfig(config)
+            }
+        }
+        
+        override fun onConnectionsChanged(count: Int) {
+            runOnUiThread {
+                updateConnections(count)
+            }
         }
     }
     
@@ -78,11 +95,15 @@ class MainActivity : AppCompatActivity() {
             // Set preview surface provider
             cameraService?.setPreviewSurfaceProvider(binding.previewView.surfaceProvider)
             
+            // Register state change listener for immediate updates
+            cameraService?.addStateChangeListener(stateChangeListener)
+            
+            // Initial UI update
             updateUI()
-            startStatusUpdates()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            cameraService?.removeStateChangeListener(stateChangeListener)
             cameraService = null
             serviceBound = false
             Log.d(TAG, "Service disconnected")
@@ -132,11 +153,8 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         
-        // Stop status updates
-        statusUpdateJob?.cancel()
-        
-        // Remove frame listener
-        cameraService?.removeFrameListener(frameListener)
+        // Remove state change listener
+        cameraService?.removeStateChangeListener(stateChangeListener)
         
         // Unbind service
         if (serviceBound) {
@@ -160,22 +178,10 @@ class MainActivity : AppCompatActivity() {
         binding.switchCameraButton.setOnClickListener {
             cameraService?.switchCamera()
             Toast.makeText(this, "Switching camera...", Toast.LENGTH_SHORT).show()
-            
-            // Update UI after short delay
-            uiScope.launch {
-                delay(500)
-                updateUI()
-            }
         }
         
         binding.toggleFlashlightButton.setOnClickListener {
             cameraService?.toggleFlashlight()
-            
-            // Update UI after short delay
-            uiScope.launch {
-                delay(200)
-                updateUI()
-            }
         }
     }
 
@@ -252,12 +258,6 @@ class MainActivity : AppCompatActivity() {
         }
         
         Toast.makeText(this, "Starting streaming...", Toast.LENGTH_SHORT).show()
-        
-        // Update UI after short delay
-        uiScope.launch {
-            delay(1000)
-            updateUI()
-        }
     }
 
     /**
@@ -270,29 +270,10 @@ class MainActivity : AppCompatActivity() {
         startService(intent)
         
         Toast.makeText(this, "Stopping streaming...", Toast.LENGTH_SHORT).show()
-        
-        // Update UI after short delay
-        uiScope.launch {
-            delay(500)
-            updateUI()
-        }
     }
 
     /**
-     * Start periodic status updates
-     */
-    private fun startStatusUpdates() {
-        statusUpdateJob?.cancel()
-        statusUpdateJob = uiScope.launch {
-            while (isActive) {
-                updateUI()
-                delay(2000) // Update every 2 seconds
-            }
-        }
-    }
-
-    /**
-     * Update UI with current service status
+     * Update UI with current service status (full update)
      * Only updates changed values to prevent disrupting user interaction (e.g., text selection)
      */
     private fun updateUI() {
@@ -305,6 +286,17 @@ class MainActivity : AppCompatActivity() {
         val config = service.getConfig()
         val cameraType = config.cameraType
         
+        // Update all components
+        updateServiceState(isRunning, serverUrl)
+        updateConnections(connections)
+        updateCameraType(cameraType)
+        updateButtonStates(isRunning, cameraType)
+    }
+    
+    /**
+     * Update service state UI components
+     */
+    private fun updateServiceState(isRunning: Boolean, serverUrl: String? = null) {
         // Update service status only if changed
         if (lastIsRunning != isRunning) {
             binding.serverStatusText.text = if (isRunning) {
@@ -331,19 +323,32 @@ class MainActivity : AppCompatActivity() {
             lastIsRunning = isRunning
         }
         
-        // Update server URL only if changed (preserves text selection)
-        if (lastServerUrl != serverUrl) {
-            binding.serverUrlText.text = serverUrl
-            lastServerUrl = serverUrl
+        // Update server URL if provided and changed
+        val url = serverUrl ?: (if (isRunning) cameraService?.getServerUrl() else "-") ?: "-"
+        if (lastServerUrl != url) {
+            binding.serverUrlText.text = url
+            lastServerUrl = url
         }
         
-        // Update connections count only if changed
+        // Update button states
+        val cameraType = cameraService?.getConfig()?.cameraType ?: "back"
+        updateButtonStates(isRunning, cameraType)
+    }
+    
+    /**
+     * Update connections count display
+     */
+    private fun updateConnections(connections: Int) {
         if (lastConnections != connections) {
             binding.connectionsText.text = connections.toString()
             lastConnections = connections
         }
-        
-        // Update camera type only if changed
+    }
+    
+    /**
+     * Update camera type display
+     */
+    private fun updateCameraType(cameraType: String) {
         if (lastCameraType != cameraType) {
             binding.cameraText.text = if (cameraType == "back") {
                 getString(R.string.back_camera)
@@ -351,9 +356,24 @@ class MainActivity : AppCompatActivity() {
                 getString(R.string.front_camera)
             }
             lastCameraType = cameraType
+            
+            // Update button states
+            val isRunning = cameraService?.isServiceRunning() ?: false
+            updateButtonStates(isRunning, cameraType)
         }
-        
-        // Enable/disable camera controls based on service status
+    }
+    
+    /**
+     * Update configuration-dependent UI
+     */
+    private fun updateConfig(config: StreamingConfig) {
+        updateCameraType(config.cameraType)
+    }
+    
+    /**
+     * Enable/disable camera controls based on service status
+     */
+    private fun updateButtonStates(isRunning: Boolean, cameraType: String) {
         binding.switchCameraButton.isEnabled = isRunning
         binding.toggleFlashlightButton.isEnabled = isRunning && cameraType == "back"
     }
