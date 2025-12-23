@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Android IP Cam</string>
+    
+    <!-- Service Notification -->
+    <string name="service_notification_title">IP Camera Active</string>
+    <string name="service_notification_text">Streaming at %s</string>
+    <string name="service_notification_channel_name">Camera Service</string>
+    <string name="service_notification_channel_desc">Persistent notification for camera streaming service</string>
+    
+    <!-- Main Activity -->
+    <string name="start_service">Start Streaming</string>
+    <string name="stop_service">Stop Streaming</string>
+    <string name="switch_camera">Switch Camera</string>
+    <string name="toggle_flashlight">Toggle Flashlight</string>
+    <string name="server_url_label">Server URL:</string>
+    <string name="server_status_label">Status:</string>
+    <string name="connections_label">Connections:</string>
+    <string name="camera_label">Camera:</string>
+    <string name="service_running">Running</string>
+    <string name="service_stopped">Stopped</string>
+    <string name="front_camera">Front</string>
+    <string name="back_camera">Back</string>
+    <string name="flashlight_on">ON</string>
+    <string name="flashlight_off">OFF</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_required">Camera permission is required for streaming</string>
+    <string name="notification_permission_required">Notification permission is required for Android 13+</string>
+    
+    <!-- Settings -->
+    <string name="settings_label">Settings</string>
+    <string name="resolution_label">Resolution:</string>
+    <string name="rotation_label">Rotation:</string>
+    <string name="quality_label">JPEG Quality:</string>
+    <string name="port_label">Server Port:</string>
+    
+    <!-- Errors -->
+    <string name="error_camera_init">Failed to initialize camera</string>
+    <string name="error_server_start">Failed to start server</string>
+    <string name="error_permission_denied">Permission denied</string>
+</resources>
