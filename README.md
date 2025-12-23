@@ -1,5 +1,4 @@
 # Android_IP_Cam
-
 Android_IP_Cam is an Android application that transforms Android devices into fully-functional IP cameras with HTTP streaming capabilities. The application is designed for 24/7 surveillance operations, repurposing older Android devices into reliable, network-accessible camera systems compatible with professional surveillance software.
 
 ## Quick Links
@@ -342,5 +341,5 @@ For issues, questions, or suggestions, please open an issue on GitHub.
 ---
 
 - **[Design Principles](DESIGN_PRINCIPLES.md)** - Comprehensive guide to the five core design principles guiding all implementation decisions
-- **[Requirements Specification](REQUIREMENTS_SPECIFICATION.md)** - Complete technical requirements for implementing IP_Cam from scratch
+- **[Requirements Specification](REQUIREMENTS_SPECIFICATION.md)** - Complete technical requirements for implementing Android_IP_Cam from scratch
 - **[Requirements Summary](REQUIREMENTS_SUMMARY.md)** - Quick reference guide to the requirements specification
