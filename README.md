@@ -341,6 +341,6 @@ For issues, questions, or suggestions, please open an issue on GitHub.
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: 2025-12-22  
-**Maintainer**: Development Team
+- **[Design Principles](DESIGN_PRINCIPLES.md)** - Comprehensive guide to the five core design principles guiding all implementation decisions
+- **[Requirements Specification](REQUIREMENTS_SPECIFICATION.md)** - Complete technical requirements for implementing IP_Cam from scratch
+- **[Requirements Summary](REQUIREMENTS_SUMMARY.md)** - Quick reference guide to the requirements specification
