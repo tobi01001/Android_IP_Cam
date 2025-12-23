@@ -422,7 +422,7 @@ fun save(context: Context, config: StreamingConfig) {
         putBoolean(KEY_KEEP_SCREEN_ON, config.keepScreenOn)
         putBoolean(KEY_AUTO_START, config.autoStart)
         putInt(KEY_MAX_CONNECTIONS, config.maxConnections)
-        apply()  // Async write
+        apply()  // Synchronous write to memory, async write to disk
     }
 }
 ```

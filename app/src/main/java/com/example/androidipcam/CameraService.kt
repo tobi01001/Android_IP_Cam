@@ -127,6 +127,11 @@ class CameraService : LifecycleService() {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "camera_service_channel"
         private const val WATCHDOG_INTERVAL_MS = 5000L
+        
+        // Wake lock configuration
+        private const val WAKE_LOCK_TIMEOUT_MS = 10 * 60 * 1000L  // 10 minutes
+        private const val WAKE_LOCK_RENEWAL_INTERVAL_MS = 8 * 60 * 1000L  // 8 minutes (renew before expiry)
+        
         const val ACTION_START_SERVICE = "com.example.ipcam.START_SERVICE"
         const val ACTION_STOP_SERVICE = "com.example.ipcam.STOP_SERVICE"
         const val ACTION_SWITCH_CAMERA = "com.example.ipcam.SWITCH_CAMERA"
@@ -174,10 +179,6 @@ class CameraService : LifecycleService() {
     private var isRunning = false
     private var lastFrameTime = 0L
     private var frameCount = 0L
-    
-    // Wake lock timeout and renewal interval
-    private val WAKE_LOCK_TIMEOUT_MS = 10 * 60 * 1000L  // 10 minutes
-    private val WAKE_LOCK_RENEWAL_INTERVAL_MS = 8 * 60 * 1000L  // 8 minutes (renew before expiry)
 
     /**
      * FrameListener - Callback interface for receiving camera frames
@@ -761,10 +762,14 @@ class CameraService : LifecycleService() {
                 
                 try {
                     // Renew CPU wake lock (has timeout)
+                    // Note: Calling acquire() on already-held lock extends the timeout
                     wakeLock?.let {
                         if (it.isHeld) {
                             it.acquire(WAKE_LOCK_TIMEOUT_MS)
                             Log.d(TAG, "CPU wake lock renewed")
+                        } else {
+                            Log.w(TAG, "CPU wake lock lost, reacquiring")
+                            it.acquire(WAKE_LOCK_TIMEOUT_MS)
                         }
                     }
                     

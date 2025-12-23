@@ -79,7 +79,7 @@ data class StreamingConfig(
                 putBoolean(KEY_KEEP_SCREEN_ON, config.keepScreenOn)
                 putBoolean(KEY_AUTO_START, config.autoStart)
                 putInt(KEY_MAX_CONNECTIONS, config.maxConnections)
-                apply()
+                apply()  // Synchronous write to memory, async write to disk
             }
         }
     }
