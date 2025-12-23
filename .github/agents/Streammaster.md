@@ -206,7 +206,7 @@ android {
 
 ## UI Guidelines
 
-IP_Cam uses View Binding with Material Design components:
+Android_IP_Cam uses View Binding with Material Design components:
 - Real-time status updates (connections, camera state)
 - One-tap controls, visual indicators
 - Responsive layout (mobile/desktop)
@@ -325,10 +325,10 @@ vlc http://DEVICE_IP:8080/stream
 4. Standards over custom solutions
 5. Unified state over distributed logic
 
-## IP_Cam Project Architecture
+## Android_IP_Cam Project Architecture
 
 ### Current Implementation
-The IP_Cam application implements all five focus areas:
+The Android_IP_Cam application implements all five focus areas:
 
 **1. Bandwidth:** Hardware JPEG encoding, 10 fps, 80% quality, efficient distribution
 **2. Single Source:** CameraService manages single camera for MainActivity + web clients

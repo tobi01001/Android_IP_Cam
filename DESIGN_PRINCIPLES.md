@@ -1,4 +1,4 @@
-# IP_Cam Core Design Principles
+# Android_IP_Cam Core Design Principles
 
 **Version:** 1.0  
 **Date:** 2025-12-23  
@@ -26,11 +26,11 @@
 
 ### 1.1 Purpose of This Document
 
-This document defines and explains the **five critical design principles** that guide all implementation decisions in the IP_Cam Android application. These principles form the architectural foundation and decision-making framework for building a reliable, performant, and user-friendly IP camera solution.
+This document defines and explains the **five critical design principles** that guide all implementation decisions in the Android_IP_Cam Android application. These principles form the architectural foundation and decision-making framework for building a reliable, performant, and user-friendly IP camera solution.
 
 ### 1.2 Why Design Principles Matter
 
-IP_Cam transforms Android devices into 24/7 surveillance cameras—a unique use case that demands careful consideration of:
+Android_IP_Cam transforms Android devices into 24/7 surveillance cameras—a unique use case that demands careful consideration of:
 - **Network efficiency**: Cameras stream continuously, consuming bandwidth
 - **System reliability**: Users expect uninterrupted operation without manual intervention
 - **Resource constraints**: Old Android devices often have limited CPU, memory, and battery
@@ -55,7 +55,7 @@ For complete technical requirements, see [REQUIREMENTS_SPECIFICATION.md](REQUIRE
 
 ## 2. Overview of the Five Principles
 
-The IP_Cam application is built on **five critical design principles** that must guide every implementation decision:
+The Android_IP_Cam application is built on **five critical design principles** that must guide every implementation decision:
 
 | # | Principle | Focus | Key Goal |
 |---|-----------|-------|----------|
@@ -303,7 +303,7 @@ Android's camera API enforces exclusive access: only one app can control a camer
 
 ### 5.2 Rationale
 
-Surveillance cameras must operate continuously without user intervention. Unlike typical apps that run when the user is actively using them, IP_Cam must:
+Surveillance cameras must operate continuously without user intervention. Unlike typical apps that run when the user is actively using them, Android_IP_Cam must:
 
 - **Run 24/7**: Continuous operation for days/weeks without interruption
 - **Survive system kills**: Android aggressively kills background processes to save battery
@@ -312,7 +312,7 @@ Surveillance cameras must operate continuously without user intervention. Unlike
 - **Maintain connectivity**: Handle network changes and reconnections
 - **Preserve settings**: Remember user configuration across restarts
 
-**Key Insight**: Android's background execution restrictions are designed to **prevent** exactly what IP_Cam needs to do. Achieving 24/7 reliability requires careful use of foreground services, wake locks, watchdogs, and recovery mechanisms.
+**Key Insight**: Android's background execution restrictions are designed to **prevent** exactly what Android_IP_Cam needs to do. Achieving 24/7 reliability requires careful use of foreground services, wake locks, watchdogs, and recovery mechanisms.
 
 ### 5.3 Android Background Execution Challenges
 
@@ -419,7 +419,7 @@ Surveillance cameras must operate continuously without user intervention. Unlike
 
 ### 6.2 Rationale
 
-IP_Cam serves a diverse user base:
+Android_IP_Cam serves a diverse user base:
 
 - **Home users**: Want simple setup; minimal technical knowledge
 - **Small businesses**: Need reliable operation with clear status indicators
@@ -538,7 +538,7 @@ Professional surveillance software (ZoneMinder, Shinobi, Blue Iris, MotionEye) e
 - **Wide compatibility**: Works with any MJPEG-compatible software
 - **Future-proofing**: New surveillance software will support standard protocols
 - **Reliability**: Mature protocols with well-understood behavior
-- **Interoperability**: Mix IP_Cam with commercial IP cameras
+- **Interoperability**: Mix Android_IP_Cam with commercial IP cameras
 
 **Key Insight**: Surveillance software integration is **non-negotiable** for this application category. MJPEG streaming over HTTP is the universal standard that all surveillance software supports.
 
@@ -831,7 +831,7 @@ When facing implementation decisions, evaluate against all five principles:
 
 ## Conclusion
 
-The **five core design principles** form the architectural foundation of IP_Cam:
+The **five core design principles** form the architectural foundation of Android_IP_Cam:
 
 1. **Bandwidth Usage & Performance**: Minimize network load while maintaining quality
 2. **Single Source of Truth**: One camera instance serves all consumers
@@ -841,7 +841,7 @@ The **five core design principles** form the architectural foundation of IP_Cam:
 
 These principles guide **every implementation decision** from high-level architecture to low-level code details. When principles conflict, use the priority order and decision framework to make consistent, well-reasoned choices.
 
-By adhering to these principles, IP_Cam delivers a **reliable, performant, user-friendly** IP camera solution that works seamlessly with professional surveillance software while being simple enough for home users.
+By adhering to these principles, Android_IP_Cam delivers a **reliable, performant, user-friendly** IP camera solution that works seamlessly with professional surveillance software while being simple enough for home users.
 
 ---
 

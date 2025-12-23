@@ -1,18 +1,18 @@
 # Requirements Specification - Quick Reference
 
-This document provides a quick overview of the comprehensive requirements specification created for the IP_Cam application.
+This document provides a quick overview of the comprehensive requirements specification created for the Android_IP_Cam application.
 
 ## What Was Created
 
 **Document:** `REQUIREMENTS_SPECIFICATION.md` (193 lines)  
-**Purpose:** Complete implementation blueprint for building IP_Cam from scratch  
+**Purpose:** Complete implementation blueprint for building Android_IP_Cam from scratch  
 **Format:** Technical requirements specification with structured sections
 
 ## Key Features Documented
 
 ### 1. Core Design Principles (The Five Pillars)
 
-The requirements are organized around five critical design principles that define the IP_Cam application:
+The requirements are organized around five critical design principles that define the Android_IP_Cam application:
 
 #### 🔹 Bandwidth Usage & Performance
 - Target: ~10 fps for optimal bandwidth/quality balance
@@ -182,7 +182,7 @@ With this specification, you can:
 
 ## Conclusion
 
-This requirements specification provides everything needed to implement IP_Cam from scratch, ensuring that all five critical design principles (Bandwidth, Single Source of Truth, Persistence, Usability, Surveillance Integration) are properly addressed throughout the implementation.
+This requirements specification provides everything needed to implement Android_IP_Cam from scratch, ensuring that all five critical design principles (Bandwidth, Single Source of Truth, Persistence, Usability, Surveillance Integration) are properly addressed throughout the implementation.
 
 The document serves as both a development guide and a quality standard, ensuring that the final application meets professional surveillance software requirements while remaining simple and reliable.
 
