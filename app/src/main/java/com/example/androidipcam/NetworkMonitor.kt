@@ -14,8 +14,16 @@ import android.util.Log
 /**
  * NetworkMonitor - Monitor network connectivity changes
  * 
- * Monitors WiFi connectivity and notifies CameraService
- * to restart the HTTP server when network reconnects.
+ * REQ-PER-011: Monitor network state and restart server on WiFi reconnection
+ * 
+ * Detects WiFi connectivity changes and notifies CameraService to restart
+ * the HTTP server when network reconnects. This ensures:
+ * - Server binds to new IP address after WiFi reconnection
+ * - Service continues operating after airplane mode
+ * - Handles WiFi network switches (e.g., different AP)
+ * - Notification updates with new server URL
+ * 
+ * Uses NetworkCallback (Android 7.0+) or BroadcastReceiver (older versions).
  */
 class NetworkMonitor(
     private val context: Context,

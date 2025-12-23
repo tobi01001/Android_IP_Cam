@@ -59,6 +59,66 @@ import java.util.concurrent.atomic.AtomicInteger
  * - Settings persistence
  * - Watchdog monitoring and recovery
  * - Wake lock management for 24/7 operation
+ * 
+ * ============================================================================
+ * PERSISTENCE & RELIABILITY FEATURES (REQ-PER-XXX)
+ * ============================================================================
+ * 
+ * This service implements comprehensive persistence mechanisms for 24/7 operation:
+ * 
+ * 1. FOREGROUND SERVICE (REQ-PER-001)
+ *    - Runs as foreground service with persistent notification
+ *    - Uses android:foregroundServiceType="camera" in manifest
+ *    - Notification displays server URL and connection status
+ * 
+ * 2. AUTOMATIC RESTART (REQ-PER-002, REQ-PER-003)
+ *    - Returns START_STICKY from onStartCommand() for automatic restart after system kill
+ *    - Implements onTaskRemoved() to restart service when app is swiped away
+ *    - Service persists independently of MainActivity lifecycle
+ * 
+ * 3. WAKE LOCKS (REQ-PER-004, REQ-PER-005)
+ *    - CPU wake lock (PARTIAL_WAKE_LOCK) prevents CPU sleep during streaming
+ *    - WiFi wake lock (WIFI_MODE_FULL_HIGH_PERF) maintains high-performance WiFi
+ *    - Uses timeout-based acquisition (10 minutes) to prevent battery drain on crashes
+ *    - Automatically renews locks every 8 minutes via background coroutine
+ * 
+ * 4. HEALTH MONITORING (REQ-PER-006, REQ-PER-007)
+ *    - Watchdog coroutine runs every 5 seconds checking frame production
+ *    - Detects camera failures (no frames for 10+ seconds)
+ *    - Exponential backoff for recovery: 1s → 2s → 4s → 8s → 16s → 30s (max)
+ *    - Automatically restarts camera on main thread (required by CameraX)
+ *    - Resets failure count on successful recovery
+ * 
+ * 5. SETTINGS PERSISTENCE (REQ-PER-008, REQ-PER-009)
+ *    - All settings saved to SharedPreferences immediately on change
+ *    - Settings restored from SharedPreferences on service startup
+ *    - Persists: camera type, rotation, resolution, port, quality, fps, flashlight, etc.
+ *    - Survives app restarts, device reboots, and service kills
+ * 
+ * 6. BATTERY OPTIMIZATION (REQ-PER-010)
+ *    - MainActivity requests battery optimization exemption on first launch
+ *    - Ensures service isn't killed by aggressive battery optimization
+ *    - Critical for reliable 24/7 surveillance operation
+ * 
+ * 7. NETWORK MONITORING (REQ-PER-011)
+ *    - NetworkMonitor detects WiFi connectivity changes
+ *    - Automatically restarts HTTP server on network reconnection
+ *    - Handles WiFi state changes, airplane mode, network switches
+ *    - Updates notification with new IP address after reconnection
+ * 
+ * THREADING MODEL:
+ * - Main thread: Camera operations (CameraX requires main thread for bindToLifecycle)
+ * - Camera executor: Frame capture and processing (single thread)
+ * - HTTP pool: 32 threads for handling client requests
+ * - Service scope: Background coroutines for watchdog, wake lock renewal, network monitoring
+ * 
+ * LIFECYCLE:
+ * 1. onCreate() → Load settings, create notification, start foreground
+ * 2. onStartCommand() → Handle actions (start, stop, switch, flashlight)
+ * 3. startStreaming() → Acquire locks, initialize camera, start server/watchdog
+ * 4. stopStreaming() → Stop watchdog, release camera, release locks
+ * 5. onTaskRemoved() → Restart service when app is swiped away
+ * 6. onDestroy() → Clean up resources, cancel coroutines
  */
 class CameraService : LifecycleService() {
 
@@ -108,11 +168,16 @@ class CameraService : LifecycleService() {
     // Coroutine scope for service lifecycle
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var watchdogJob: Job? = null
+    private var wakeLockRenewalJob: Job? = null
 
     // Status tracking
     private var isRunning = false
     private var lastFrameTime = 0L
     private var frameCount = 0L
+    
+    // Wake lock timeout and renewal interval
+    private val WAKE_LOCK_TIMEOUT_MS = 10 * 60 * 1000L  // 10 minutes
+    private val WAKE_LOCK_RENEWAL_INTERVAL_MS = 8 * 60 * 1000L  // 8 minutes (renew before expiry)
 
     /**
      * FrameListener - Callback interface for receiving camera frames
@@ -147,13 +212,14 @@ class CameraService : LifecycleService() {
         super.onCreate()
         Log.d(TAG, "Service onCreate")
         
-        // Load configuration
+        // REQ-PER-009: Restore settings from SharedPreferences on startup
         config = StreamingConfig.load(this)
+        Log.d(TAG, "Configuration loaded: camera=${config.cameraType}, port=${config.serverPort}")
         
         // Create notification channel
         createNotificationChannel()
         
-        // Start as foreground service
+        // REQ-PER-001: Start as foreground service with persistent notification
         startForeground(NOTIFICATION_ID, createNotification())
     }
 
@@ -167,7 +233,9 @@ class CameraService : LifecycleService() {
             ACTION_TOGGLE_FLASHLIGHT -> toggleFlashlight()
         }
         
-        // START_STICKY ensures service restarts after system kill
+        // REQ-PER-002: START_STICKY ensures service restarts after system kill
+        // System will recreate service and call onStartCommand with null intent
+        // Service state is restored from SharedPreferences in onCreate()
         return START_STICKY
     }
 
@@ -178,9 +246,10 @@ class CameraService : LifecycleService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        Log.d(TAG, "Task removed - restarting service")
+        Log.d(TAG, "Task removed - restarting service to maintain 24/7 operation")
         
-        // Restart service when app is swiped away
+        // REQ-PER-003: Restart service when app is swiped away from recent apps
+        // This ensures streaming continues even when MainActivity is destroyed
         val restartIntent = Intent(applicationContext, CameraService::class.java).apply {
             action = ACTION_START_SERVICE
         }
@@ -203,6 +272,15 @@ class CameraService : LifecycleService() {
 
     /**
      * Start camera streaming and HTTP server
+     * 
+     * Initializes all components required for 24/7 operation:
+     * 1. Acquires wake locks (CPU + WiFi) with auto-renewal
+     * 2. Initializes camera with current configuration
+     * 3. Starts HTTP web server for MJPEG streaming
+     * 4. Starts network monitor for WiFi reconnection handling
+     * 5. Starts watchdog for health monitoring and recovery
+     * 6. Updates notification with server URL
+     * 7. Notifies state change listeners (MainActivity)
      */
     fun startStreaming() {
         if (isRunning) {
@@ -213,7 +291,7 @@ class CameraService : LifecycleService() {
         Log.d(TAG, "Starting streaming")
         isRunning = true
         
-        // Acquire wake locks
+        // REQ-PER-004, REQ-PER-005: Acquire wake locks for 24/7 operation
         acquireWakeLocks()
         
         // Start camera
@@ -222,10 +300,10 @@ class CameraService : LifecycleService() {
         // Start HTTP server
         startWebServer()
         
-        // Start network monitoring
+        // REQ-PER-011: Start network monitoring for WiFi reconnection
         startNetworkMonitoring()
         
-        // Start watchdog
+        // REQ-PER-006: Start watchdog for health monitoring
         startWatchdog()
         
         // Update notification
@@ -271,6 +349,9 @@ class CameraService : LifecycleService() {
 
     /**
      * Switch between front and back camera
+     * 
+     * REQ-PER-008: Settings persisted immediately to SharedPreferences
+     * REQ-SST-005: Camera switching updates both app UI and web stream
      */
     fun switchCamera() {
         Log.d(TAG, "Switching camera")
@@ -278,6 +359,7 @@ class CameraService : LifecycleService() {
         config = config.copy(
             cameraType = if (config.cameraType == "back") "front" else "back"
         )
+        // REQ-PER-008: Persist settings immediately
         StreamingConfig.save(this, config)
         
         // Notify camera change
@@ -316,6 +398,8 @@ class CameraService : LifecycleService() {
 
     /**
      * Toggle flashlight (back camera only)
+     * 
+     * REQ-PER-008: Settings persisted immediately to SharedPreferences
      */
     fun toggleFlashlight() {
         if (config.cameraType != "back") {
@@ -324,6 +408,7 @@ class CameraService : LifecycleService() {
         }
         
         config = config.copy(flashlightEnabled = !config.flashlightEnabled)
+        // REQ-PER-008: Persist settings immediately
         StreamingConfig.save(this, config)
         
         camera?.cameraControl?.enableTorch(config.flashlightEnabled)
@@ -548,6 +633,12 @@ class CameraService : LifecycleService() {
 
     /**
      * Start watchdog for health monitoring
+     * 
+     * REQ-PER-006: Health watchdog running every 5 seconds
+     * REQ-PER-007: Exponential backoff for recovery (1s → 30s max)
+     * 
+     * Monitors camera frame production and attempts recovery if frames stop.
+     * Uses exponential backoff to avoid excessive recovery attempts.
      */
     private fun startWatchdog() {
         watchdogJob = serviceScope.launch {
@@ -561,17 +652,25 @@ class CameraService : LifecycleService() {
                     val timeSinceLastFrame = System.currentTimeMillis() - lastFrameTime
                     
                     if (timeSinceLastFrame > 10000) {
-                        Log.w(TAG, "No frames for 10 seconds, attempting recovery")
+                        Log.w(TAG, "No frames for 10 seconds, attempting recovery (failure count: $failureCount)")
                         failureCount++
                         
                         // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s (max)
                         val backoffDelay = minOf(1000L * (1 shl failureCount), 30000L)
+                        Log.d(TAG, "Waiting ${backoffDelay}ms before recovery attempt")
                         delay(backoffDelay)
                         
-                        releaseCamera()
-                        initializeCamera()
+                        // Camera operations must run on main thread
+                        withContext(Dispatchers.Main) {
+                            releaseCamera()
+                            initializeCamera()
+                        }
                     } else {
-                        failureCount = 0
+                        // Reset failure count on successful frame production
+                        if (failureCount > 0) {
+                            Log.d(TAG, "Camera recovered, resetting failure count")
+                            failureCount = 0
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Watchdog error", e)
@@ -582,19 +681,26 @@ class CameraService : LifecycleService() {
 
     /**
      * Acquire wake locks to prevent CPU and WiFi sleep
+     * 
+     * REQ-PER-004: Maintain CPU wake lock during streaming
+     * REQ-PER-005: Maintain high-performance WiFi lock
+     * 
+     * CPU wake lock uses timeout-based acquisition to prevent battery drain if service crashes.
+     * WiFi lock doesn't support timeout, so it's managed manually with try-finally patterns.
+     * Both locks are automatically renewed every 8 minutes via background coroutine.
      */
     private fun acquireWakeLocks() {
         try {
-            // CPU wake lock
+            // CPU wake lock with timeout
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock = powerManager.newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK,
                 "IPCam::CameraServiceWakeLock"
             ).apply {
-                acquire()
+                acquire(WAKE_LOCK_TIMEOUT_MS)
             }
             
-            // WiFi wake lock
+            // WiFi wake lock (no timeout support, managed by renewal job)
             val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             wifiLock = wifiManager.createWifiLock(
                 WifiManager.WIFI_MODE_FULL_HIGH_PERF,
@@ -603,7 +709,10 @@ class CameraService : LifecycleService() {
                 acquire()
             }
             
-            Log.d(TAG, "Wake locks acquired")
+            Log.d(TAG, "Wake locks acquired (CPU: ${WAKE_LOCK_TIMEOUT_MS / 1000}s timeout, WiFi: no timeout)")
+            
+            // Start wake lock renewal job
+            startWakeLockRenewal()
         } catch (e: Exception) {
             Log.e(TAG, "Error acquiring wake locks", e)
         }
@@ -614,6 +723,10 @@ class CameraService : LifecycleService() {
      */
     private fun releaseWakeLocks() {
         try {
+            // Stop wake lock renewal
+            wakeLockRenewalJob?.cancel()
+            wakeLockRenewalJob = null
+            
             wakeLock?.let {
                 if (it.isHeld) {
                     it.release()
@@ -631,6 +744,42 @@ class CameraService : LifecycleService() {
             Log.d(TAG, "Wake locks released")
         } catch (e: Exception) {
             Log.e(TAG, "Error releasing wake locks", e)
+        }
+    }
+    
+    /**
+     * Start periodic wake lock renewal to prevent timeout
+     * 
+     * Wake locks are acquired with a timeout to prevent battery drain if service crashes.
+     * This job renews the locks every 8 minutes (before the 10-minute timeout expires).
+     * Only CPU wake lock needs renewal (WiFi lock doesn't support timeout).
+     */
+    private fun startWakeLockRenewal() {
+        wakeLockRenewalJob = serviceScope.launch {
+            while (isRunning) {
+                delay(WAKE_LOCK_RENEWAL_INTERVAL_MS)
+                
+                try {
+                    // Renew CPU wake lock (has timeout)
+                    wakeLock?.let {
+                        if (it.isHeld) {
+                            it.acquire(WAKE_LOCK_TIMEOUT_MS)
+                            Log.d(TAG, "CPU wake lock renewed")
+                        }
+                    }
+                    
+                    // WiFi wake lock doesn't need renewal (no timeout)
+                    // Just verify it's still held
+                    wifiLock?.let {
+                        if (!it.isHeld) {
+                            Log.w(TAG, "WiFi wake lock lost, reacquiring")
+                            it.acquire()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error renewing wake locks", e)
+                }
+            }
         }
     }
 

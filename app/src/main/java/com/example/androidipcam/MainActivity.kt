@@ -209,6 +209,15 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Request battery optimization exemption for 24/7 operation
+     * 
+     * REQ-PER-010: Request battery optimization exemption for reliable operation
+     * 
+     * Battery optimization can kill the foreground service during Doze mode,
+     * preventing reliable 24/7 surveillance. Requesting exemption ensures:
+     * - Service continues running during Doze mode
+     * - Wake locks remain effective
+     * - Network connections stay active
+     * - Camera streaming isn't interrupted
      */
     private fun requestBatteryOptimizationExemption() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
