@@ -9,8 +9,15 @@ import android.util.Log
 /**
  * BootReceiver - Auto-start service on device boot
  * 
+ * REQ-PER-009: Restore settings from SharedPreferences
+ * 
  * Starts CameraService automatically when device boots,
- * if auto-start is enabled in settings.
+ * if auto-start is enabled in settings. This enables:
+ * - Unattended operation after power outage
+ * - Automatic service startup after device reboot
+ * - Zero-touch surveillance system deployment
+ * 
+ * Requires RECEIVE_BOOT_COMPLETED permission in manifest.
  */
 class BootReceiver : BroadcastReceiver() {
 

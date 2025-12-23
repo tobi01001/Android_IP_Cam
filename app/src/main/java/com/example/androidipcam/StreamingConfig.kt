@@ -5,7 +5,19 @@ import android.content.SharedPreferences
 
 /**
  * Configuration manager for IP_Cam application settings.
- * Handles persistence and retrieval of all configurable parameters.
+ * 
+ * REQ-PER-008: Persist all settings to SharedPreferences immediately
+ * REQ-PER-009: Restore settings on startup
+ * 
+ * Handles persistence and retrieval of all configurable parameters using
+ * SharedPreferences. All settings changes are persisted immediately (not batched)
+ * to ensure settings survive:
+ * - Service crashes or system kills
+ * - App force-close or swipe away
+ * - Device reboots or power loss
+ * - System-initiated service restarts
+ * 
+ * Settings are restored in CameraService.onCreate() before any camera operations.
  */
 data class StreamingConfig(
     val cameraType: String = "back",
@@ -67,7 +79,7 @@ data class StreamingConfig(
                 putBoolean(KEY_KEEP_SCREEN_ON, config.keepScreenOn)
                 putBoolean(KEY_AUTO_START, config.autoStart)
                 putInt(KEY_MAX_CONNECTIONS, config.maxConnections)
-                apply()
+                apply()  // Synchronous write to memory, async write to disk
             }
         }
     }
